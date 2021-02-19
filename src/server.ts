@@ -1,6 +1,7 @@
 import express from 'express';
 
 import router from './router';
+import connection from './dbConnection';
 
 class Server{
     public express: express.Application;
@@ -10,7 +11,8 @@ class Server{
         this.initialize()
     }
 
-    private initialize(){
+    private initialize(){        
+        connection('mongodb://localhost:27017/Citta-App?readPreference=primary&appname=MongoDB%20Compass&ssl=false');        
         this.middlewares();
         this.routes();
     }
