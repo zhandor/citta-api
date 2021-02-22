@@ -10,7 +10,7 @@ const connection = (database: string) => {
 
     const connect = () => {
         mongoose.connect(database, mongooseParams).then((result) => {
-            console.log({result});            
+            // console.log({result});
             console.log("Connection successfull");
         }).catch((error) => {
             console.log("The following error occurred: ", error);
