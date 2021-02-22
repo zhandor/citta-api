@@ -1,27 +1,42 @@
 import { Request, Response} from 'express';
 
-import { createCity } from './model'
+import * as model from './model'
 
 const create = async (req: Request, res: Response) => {
     try {
-        const {name, uf, area, population, active} = req.body;
-
-        res.status(200).json(createCity(req.body));
+        res.status(200).json(model.createCity(req.body));
     } catch (error) {
         res.status(401).json({error})
     }
 
 }
 
-const read = async (req: Request, res: Response) => {
+const listAll = async (req: Request, res: Response) => {
     try {
-        const {name, uf, area, population, active} = req.body;
-
-        res.status(200).json({status: "success", payload: req.body})
+        const cityList = await model.listCities();        
+        res.status(200).json(cityList);
     } catch (error) {
         res.status(401).json({error})
     }
+}
 
+const listByUF = async (req: Request, res: Response) => {
+    try {
+        const cityList = await model.listCitiesByUF(req.query);        
+        res.status(200).json(cityList);
+    } catch (error) {
+        res.status(401).json({error})
+    }
+}
+
+
+const listByName = async (req: Request, res: Response) => {
+    try {
+        const cityList = await model.listCitiesByName(req.query);
+        res.status(200).json(cityList);
+    } catch (error) {
+        res.status(401).json({error})
+    }
 }
 
 const update = async (req: Request, res: Response) => {
@@ -46,4 +61,4 @@ const remove = async (req: Request, res: Response) => {
 
 }
 
-export { create, read, update, remove }
+export { create, listAll, listByUF, listByName, update, remove }
