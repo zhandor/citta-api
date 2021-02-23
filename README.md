@@ -21,13 +21,13 @@ ativo (boolean) – default true
 timestamps – createdAt (date) e updatedAt (date)
 
 OBS: 
-Todos os campos são obrigatórios
-O campo ativo não será informado no cadastro
-Deve ser possível atualizar qualquer campo da cidade
-As operações devem estar no path /cidades
-A pesquisa deve sempre considerar as cidades ativas
-Os campos createdAt e  updatedAt não serão atualizados via REST
-A pesquisa de cidades deve considerar parte do nome, e sem considerar caracteres especiais
+Todos os campos são obrigatórios ok
+O campo ativo não será informado no cadastro ok
+Deve ser possível atualizar qualquer campo da cidade ok
+As operações devem estar no path /cidades ok
+A pesquisa deve sempre considerar as cidades ativas ok
+Os campos createdAt e  updatedAt não serão atualizados via REST ok
+A pesquisa de cidades deve considerar parte do nome, e sem considerar caracteres especiais ok
 Ex: Buscar por pelo termo “Sao” deveria trazer por exemplo as cidades  “São Paulo”, “São Carlos”
 
 

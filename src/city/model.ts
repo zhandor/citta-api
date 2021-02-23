@@ -16,74 +16,123 @@ const citySchema = new Schema({
 const City = mongoose.model('City', citySchema);
 
 const createCity = async (body: any) => {
-    const { nome, uf, area, populacao, ativo } = body
-
-    const city = new City({ nome, uf, area, populacao, ativo })
-    return city.save().then((result) => {
-        return result;
-    })
+    try {
+        const { nome, uf, area, populacao, ativo } = body
+        const city = new City({ nome, uf, area, populacao, ativo })
+        return city.save().then((result) => {
+            return result;
+        });        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
 const listCities = async () => {
-    const cityList = await City.find({})
-        .sort({uf:1, nome: 1}) //nome do campo: 1 para crescente e -1 para decrescente
-        .catch(e => {
-            console.log({e})
-        })
-        .then((result) => {        
-            return result
-        });
-        
-    return cityList;
+    try {
+        const cityList = await City.find({ativo: true})
+            .sort({uf:1, nome: 1}) //nome do campo: 1 para crescente e -1 para decrescente
+            .catch(e => {
+                console.log({e})
+            })
+            .then((result) => {        
+                return result
+            });            
+        return cityList;        
+    } catch (error) {
+        console.log('Error: ', error);        
+    }
 }
 
 const listCitiesByUF = async (query: any) => {
-    const { uf } = query;
-    console.log(query)
-    const cityList = await City.find({uf})
-        .sort({nome: 1})
-        .catch(e => {
-            console.log({e})
-        })
-        .then((result) => {        
-            return result
-        });
-
-    return cityList;
+    try {
+        const { uf } = query;
+        console.log(query)
+        const cityList = await City.find({uf: {$regex: uf, $options: 'i'}, ativo: true})
+            .sort({nome: 1})
+            .catch(e => {
+                console.log({e})
+            })
+            .then((result) => {        
+                return result
+            });
+    
+        return cityList;        
+    } catch (error) {        
+        console.log('Error: ', error);
+    }
 }
 
 const listCitiesByName = async (query: any) => {
-    const { name } = query;
-    const cityList = await City
-        .find({ nome: { $regex: clearText(name), $options: 'i' } }) //option i: case insensitive
-        //.find({$text: { $search: name }})
-        .sort({uf:1, nome: 1})
-        .catch(e => {
-            console.log({e})
-        })
-        .then((result) => {        
-            return result
+    try {
+        const { name } = query;
+        const cityList = await City
+            .find({nome: {$regex: clearText(name), $options: 'i'}, ativo: true}) //option i: case insensitive
+            .sort({uf:1, nome: 1})
+            .catch(e => {
+                console.log({e})
+            })
+            .then((result) => {        
+                return result
+            });
+        
+        return cityList;        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
+}
+
+const deactivateCity = async (body: any) => {
+    try {
+        const { id } = body;
+        const options = {new: true};
+        const updCity = await City.findByIdAndUpdate(id, {ativo: false}, options, (result) => {
+            console.log(result);
+            return result;
         });
-    
-    return cityList;
+        return updCity;        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
-const clearText = (text: string) => {
-    const regexTxtA = new RegExp("[aãàáäâ]",'gi');
-    text = text.replace(regexTxtA, '[aãàáäâ]');
-    const regexTxtE = new RegExp("[èeéëê]",'gi');
-    text = text.replace(regexTxtE, '[èeéëê]');
-    const regexTxtI = new RegExp("[iìíïî]",'gi');
-    text = text.replace(regexTxtI, '[iìíïî]');
-    const regexTxtO = new RegExp("[oõòóöô]",'gi');
-    text = text.replace(regexTxtO, '[oõòóöô]');
-    const regexTxtU = new RegExp("[uùúüû]",'gi');
-    text = text.replace(regexTxtU, '[uùúüû]');
-    const regexTxtN = new RegExp("[nñ]",'gi');
-    text = text.replace(regexTxtN, '[nñ]');
-    const regexTxtC = new RegExp("[cç]",'gi');
-    text = text.replace(regexTxtC, '[cç]');
-    return text;
+const updateCity = async (body: any) => {
+    try {
+        const { id, nome, uf, area, populacao, ativo = true } = body;
+        const options = {new: true};
+        const updCity = await City.findByIdAndUpdate(id, {nome, uf, area, populacao, ativo}, options, (result) => {
+            console.log(result);
+            return result;
+        });
+        return updCity;        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
 }
 
-export { createCity, listCities, listCitiesByUF, listCitiesByName }
+const deleteCity = async (body: any) => {
+    try {
+        const { id } = body;
+        const options = {new: true};
+        const updCity = await City.findByIdAndRemove(id, options, (result) => {
+            console.log(result);
+            return result;
+        });
+        return updCity;        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
+}
+
+//função para "retirar" diacriticos (acentos e caracteres especiais) nas buscas
+const clearText = (text: string) => {    
+    return text
+        .replace(new RegExp("[aãàáäâ]",'gi'), '[aãàáäâ]')
+        .replace(new RegExp("[eèéëê]",'gi'), '[eèéëê]')
+        .replace(new RegExp("[iìíïî]",'gi'), '[iìíïî]')    
+        .replace(new RegExp("[oõòóöô]",'gi'), '[oõòóöô]')    
+        .replace(new RegExp("[uùúüû]",'gi'), '[uùúüû]')    
+        .replace(new RegExp("[nñ]",'gi'), '[nñ]')        
+        .replace(new RegExp("[cç]",'gi'), '[cç]');    
+}
+
+export { createCity, listCities, listCitiesByUF, listCitiesByName, updateCity, deleteCity, deactivateCity}

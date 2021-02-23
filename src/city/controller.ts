@@ -41,9 +41,8 @@ const listByName = async (req: Request, res: Response) => {
 
 const update = async (req: Request, res: Response) => {
     try {
-        const {name, uf, area, population, active} = req.body;
-
-        res.status(200).json({status: "success", payload: req.body})
+        const updCity = await model.updateCity(req.body);
+        res.status(200).json(updCity);
     } catch (error) {
         res.status(401).json({error})
     }
@@ -52,9 +51,8 @@ const update = async (req: Request, res: Response) => {
 
 const remove = async (req: Request, res: Response) => {
     try {
-        const {name, uf, area, population, active} = req.body;
-
-        res.status(200).json({status: "success", payload: req.body})
+        const delCity = await model.updateCity(req.body);
+        res.status(200).json(delCity);
     } catch (error) {
         res.status(401).json({error})
     }
