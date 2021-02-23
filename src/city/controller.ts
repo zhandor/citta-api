@@ -4,7 +4,7 @@ import * as model from './model'
 
 const create = async (req: Request, res: Response) => {
     try {
-        res.status(200).json(model.createCity(req.body));
+        res.status(200).json(await model.createCity(req.body));
     } catch (error) {
         res.status(401).json({error})
     }
