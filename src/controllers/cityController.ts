@@ -30,6 +30,14 @@ const listByUF = async (req: Request, res: Response) => {
     }
 }
 
+const listById = async (req: Request, res: Response) => {
+    try {
+        const cityList = await listCitiesById(req.query);
+        res.status(200).json(cityList);
+    } catch (error) {
+        res.status(401).json({error})
+    }
+}
 
 const listByName = async (req: Request, res: Response) => {
     try {
@@ -126,6 +134,24 @@ const listCitiesByName = async (query: any) => {
     }
 }
 
+const listCitiesById = async (query: any) => {
+    try {
+        const { id } = query;
+        const cityList = await model.City
+            .findById(id) //option i: case insensitive            
+            .catch(e => {
+                console.log({e})
+            })
+            .then((result) => {        
+                return result
+            });
+        
+        return cityList;        
+    } catch (error) {
+        console.log('Error: ', error);
+    }
+}
+
 const deactivateCity = async (body: any) => {
     try {
         const { id } = body;
@@ -168,4 +194,4 @@ const deleteCity = async (body: any) => {
     }
 }
 
-export { create, listAll, listByUF, listByName, update, remove }
+export { create, listAll, listByUF, listByName, listById, update, remove }

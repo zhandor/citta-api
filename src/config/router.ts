@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express'
 
-import city from '..city'
+import city from '../city'
 
 const router = Router()
 
