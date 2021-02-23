@@ -5,7 +5,11 @@ import * as aux from '../auxiliaryFunctions'
 
 const create = async (req: Request, res: Response) => {
     try {
-        res.status(200).json(await createCity(req.body));
+        if(req.body){
+            res.status(200).json(await createCity(req.body));
+        }else{
+            res.status(401).json({error: 'A requisição está vazia'})    
+        }
     } catch (error) {
         res.status(401).json({error})
     }
@@ -60,7 +64,7 @@ const update = async (req: Request, res: Response) => {
 
 const remove = async (req: Request, res: Response) => {
     try {
-        const delCity = await updateCity(req.body);
+        const delCity = await deleteCity(req.body);
         res.status(200).json(delCity);
     } catch (error) {
         res.status(401).json({error})
@@ -70,11 +74,16 @@ const remove = async (req: Request, res: Response) => {
 
 const createCity = async (body: any) => {
     try {
-        const { nome, uf, area, populacao, ativo } = body
-        const city = new model.City({ nome, uf, area, populacao, ativo })
-        return city.save().then((result) => {
-            return result;
-        });        
+        const { nome, uf, area, populacao } = body;
+        const validateBody = aux.validateFields({nome, uf, area, populacao});
+        if(validateBody.isValid){
+            const city = new model.City({ nome, uf, area, populacao });
+            return city.save().then((result) => {
+                return result;
+            });
+        }else{
+            return validateBody.errors;
+        }
     } catch (error) {
         console.log('Error: ', error);
     }
