@@ -1,51 +1,55 @@
 import { Request, Response} from 'express';
 
 import * as model from '../models/cityModel'
-import * as aux from '../auxiliaryFunctions'
+import * as aux from '../util'
 
 const create = async (req: Request, res: Response) => {
     try {
         if(req.body){
-            res.status(200).json(await createCity(req.body));
+            const newCity = await createCity(req.body);            
+            res.status((typeof newCity.status === 'undefined')?500:newCity.status).json(newCity.result);
         }else{
-            res.status(401).json({error: 'A requisição está vazia'})    
+            res.status(400).json({error: 'A requisição está vazia'})    
         }
     } catch (error) {
-        res.status(401).json({error})
+        res.status(500).json({error})
     }
 
 }
 
-const listAll = async (req: Request, res: Response) => {
-    try {
-        const cityList = await listCities();        
-        res.status(200).json(cityList);
-    } catch (error) {
-        res.status(401).json({error})
-    }
-}
-
-const listByUF = async (req: Request, res: Response) => {
-    try {
-        const cityList = await listCitiesByUF(req.query);        
-        res.status(200).json(cityList);
-    } catch (error) {
-        res.status(401).json({error})
+const list = async (req: Request, res: Response) => {
+    const {name,uf} = req.query;    
+        
+    if(name){
+        //List by Name
+        try {
+            const cityList = await listCitiesByName(req.query);
+            res.status(200).json(cityList);
+        } catch (error) {
+            res.status(500).json({error})
+        }
+    }else if(uf){
+        //List by UF
+        try {
+            const cityList = await listCitiesByUF(req.query);        
+            res.status(200).json(cityList);
+        } catch (error) {
+            res.status(500).json({error})
+        }
+    }else{
+        //List All
+        try {
+            const cityList = await listCities();        
+            res.status(200).json(cityList);
+        } catch (error) {
+            res.status(500).json({error});
+        }
     }
 }
 
 const listById = async (req: Request, res: Response) => {
     try {
-        const cityList = await listCitiesById(req.query);
-        res.status(200).json(cityList);
-    } catch (error) {
-        res.status(401).json({error})
-    }
-}
-
-const listByName = async (req: Request, res: Response) => {
-    try {
-        const cityList = await listCitiesByName(req.query);
+        const cityList = await listCitiesById(req.params.id);
         res.status(200).json(cityList);
     } catch (error) {
         res.status(401).json({error})
@@ -54,12 +58,11 @@ const listByName = async (req: Request, res: Response) => {
 
 const update = async (req: Request, res: Response) => {
     try {
-        const updCity = await updateCity(req.body);
+        const updCity = await updateCity(req);
         res.status(200).json(updCity);
     } catch (error) {
-        res.status(401).json({error})
+        res.status(500).json({error})
     }
-
 }
 
 const remove = async (req: Request, res: Response) => {
@@ -67,25 +70,29 @@ const remove = async (req: Request, res: Response) => {
         const delCity = await deleteCity(req.body);
         res.status(200).json(delCity);
     } catch (error) {
-        res.status(401).json({error})
+        res.status(500).json({error})
     }
-
 }
 
 const createCity = async (body: any) => {
     try {
         const { nome, uf, area, populacao } = body;
         const validateBody = aux.validateFields({nome, uf, area, populacao});
+        let result, status;
         if(validateBody.isValid){
             const city = new model.City({ nome, uf, area, populacao });
-            return city.save().then((result) => {
+            result = city.save().then((result) => {
                 return result;
             });
+            status = 201;
         }else{
-            return validateBody.errors;
+            result = validateBody.errors;
+            status = 400;
         }
+        return {result, status}
     } catch (error) {
         console.log('Error: ', error);
+        return {result: error, status: 500}
     }
 }
 
@@ -143,9 +150,8 @@ const listCitiesByName = async (query: any) => {
     }
 }
 
-const listCitiesById = async (query: any) => {
-    try {
-        const { id } = query;
+const listCitiesById = async (id: any) => {
+    try {        
         const cityList = await model.City
             .findById(id) //option i: case insensitive            
             .catch(e => {
@@ -161,9 +167,9 @@ const listCitiesById = async (query: any) => {
     }
 }
 
-const deactivateCity = async (body: any) => {
+const deactivateCity = async (req: any) => {
     try {
-        const { id } = body;
+        const { id } = req.parasms;
         const options = {new: true};
         const updCity = await model.City.findByIdAndUpdate(id, {ativo: false}, options, (result) => {
             console.log(result);
@@ -175,9 +181,10 @@ const deactivateCity = async (body: any) => {
     }
 }
 
-const updateCity = async (body: any) => {
+const updateCity = async (req: any) => {
     try {
-        const { id, nome, uf, area, populacao, ativo = true } = body;
+        const id = req.params.id;
+        const { nome, uf, area, populacao, ativo = true } = req.body;
         const options = {new: true};
         const updCity = await model.City.findByIdAndUpdate(id, {nome, uf, area, populacao, ativo}, options, (result) => {
             console.log(result);
@@ -189,11 +196,11 @@ const updateCity = async (body: any) => {
     }
 }
 
-const deleteCity = async (body: any) => {
+const deleteCity = async (req: any) => {
     try {
-        const { id } = body;
+        const id = req.params.id;
         const options = {new: true};
-        const updCity = await model.City.findByIdAndRemove(id, options, (result) => {
+        const updCity = await model.City.findByIdAndDelete(id, options, (result) => {
             console.log(result);
             return result;
         });
@@ -203,4 +210,4 @@ const deleteCity = async (body: any) => {
     }
 }
 
-export { create, listAll, listByUF, listByName, listById, update, remove }
+export { create, list, listById, update, remove }

@@ -13,20 +13,32 @@ const clearText = (text: string) => {
 
 const validateFields = (params: ICity) => {
     console.log(params);
-    let errors = '';
+    let errorCount = 0;
+    let errors = new Object();
     if(params.nome == '' || typeof params.nome === 'undefined'){
-        errors += 'O nome da cidade está vazio. ';
+        const nome = 'O nome da cidade está vazio.';
+        errors = {nome, ...errors};
+        errorCount++;
     }
     if(params.uf == '' || typeof params.uf === 'undefined'){
-        errors += 'A UF cidade está vazia. ';
+        const uf = 'A UF cidade está vazia.';
+        errors = {uf, ...errors};
+        errorCount++;
     }
     if(params.populacao <= 0 || typeof params.populacao === 'undefined'){
-        errors += 'A população deve ser maior que zero. ';
+        const populacao = 'A população deve ser maior que zero.';
+        errors = {populacao, ...errors};
+        errorCount++;
     }
     if(params.area <= 0 || typeof params.area === 'undefined'){
-        errors += 'A área da cidade deve ser maior que zero. ';
+        const area = 'A área da cidade deve ser maior que zero.';
+        errors = {area, ...errors};
+        errorCount++;
     }
-    return {isValid: (errors.length==0), errors}
+    
+    //const errors = {nome, uf, populacao, area};
+
+    return {isValid: (errorCount == 0), errors}
 }
 
 export{ clearText, validateFields }

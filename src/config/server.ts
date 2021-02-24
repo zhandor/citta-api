@@ -19,7 +19,7 @@ class Server{
 
     private middlewares(){
         this.express.use(express.json());
-        this.express.use(express.urlencoded());
+        this.express.use(express.urlencoded({extended: true}));
     }
 
     private routes(){
