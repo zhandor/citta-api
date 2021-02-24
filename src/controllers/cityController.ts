@@ -1,7 +1,7 @@
 import { Request, Response} from 'express';
 
 import * as model from '../models/cityModel'
-import * as aux from '../util'
+import * as util from '../util'
 
 const create = async (req: Request, res: Response) => {
     try {
@@ -14,7 +14,6 @@ const create = async (req: Request, res: Response) => {
     } catch (error) {
         res.status(500).json({error})
     }
-
 }
 
 const list = async (req: Request, res: Response) => {
@@ -52,14 +51,14 @@ const listById = async (req: Request, res: Response) => {
         const cityList = await listCitiesById(req.params.id);
         res.status(200).json(cityList);
     } catch (error) {
-        res.status(401).json({error})
+        res.status(500).json({error})
     }
 }
 
 const update = async (req: Request, res: Response) => {
     try {
         const updCity = await updateCity(req);
-        res.status(200).json(updCity);
+        res.status(202).json(updCity);
     } catch (error) {
         res.status(500).json({error})
     }
@@ -68,7 +67,7 @@ const update = async (req: Request, res: Response) => {
 const remove = async (req: Request, res: Response) => {
     try {
         const delCity = await deleteCity(req.body);
-        res.status(200).json(delCity);
+        res.status(202).json(delCity);
     } catch (error) {
         res.status(500).json({error})
     }
@@ -77,11 +76,13 @@ const remove = async (req: Request, res: Response) => {
 const createCity = async (body: any) => {
     try {
         const { nome, uf, area, populacao } = body;
-        const validateBody = aux.validateFields({nome, uf, area, populacao});
+        const validateBody = util.validateFields({nome, uf, area, populacao});
         let result, status;
         if(validateBody.isValid){
             const city = new model.City({ nome, uf, area, populacao });
             result = city.save().then((result) => {
+                console.log("Create City");
+                console.log({result});
                 return result;
             });
             status = 201;
@@ -91,7 +92,6 @@ const createCity = async (body: any) => {
         }
         return {result, status}
     } catch (error) {
-        console.log('Error: ', error);
         return {result: error, status: 500}
     }
 }
@@ -102,13 +102,15 @@ const listCities = async () => {
             .sort({uf:1, nome: 1}) //nome do campo: 1 para crescente e -1 para decrescente
             .catch(e => {
                 console.log({e})
+                return null;
             })
             .then((result) => {        
                 return result
             });            
         return cityList;        
     } catch (error) {
-        console.log('Error: ', error);        
+        console.log('Error: ', error);
+        return null;
     }
 }
 
@@ -119,7 +121,8 @@ const listCitiesByUF = async (query: any) => {
         const cityList = await model.City.find({uf: {$regex: uf, $options: 'i'}, ativo: true})
             .sort({nome: 1})
             .catch(e => {
-                console.log({e})
+                console.log({e});
+                return null;
             })
             .then((result) => {        
                 return result
@@ -128,6 +131,7 @@ const listCitiesByUF = async (query: any) => {
         return cityList;        
     } catch (error) {        
         console.log('Error: ', error);
+        return null;
     }
 }
 
@@ -135,10 +139,11 @@ const listCitiesByName = async (query: any) => {
     try {
         const { name } = query;
         const cityList = await model.City
-            .find({nome: {$regex: aux.clearText(name), $options: 'i'}, ativo: true}) //option i: case insensitive
+            .find({nome: {$regex: util.clearText(name), $options: 'i'}, ativo: true}) //option i: case insensitive
             .sort({uf:1, nome: 1})
             .catch(e => {
-                console.log({e})
+                console.log({e});
+                return null;
             })
             .then((result) => {        
                 return result
@@ -147,6 +152,7 @@ const listCitiesByName = async (query: any) => {
         return cityList;        
     } catch (error) {
         console.log('Error: ', error);
+        return null;
     }
 }
 
@@ -155,7 +161,8 @@ const listCitiesById = async (id: any) => {
         const cityList = await model.City
             .findById(id) //option i: case insensitive            
             .catch(e => {
-                console.log({e})
+                console.log({e});
+                return null;
             })
             .then((result) => {        
                 return result
@@ -164,13 +171,14 @@ const listCitiesById = async (id: any) => {
         return cityList;        
     } catch (error) {
         console.log('Error: ', error);
+        return null;
     }
 }
 
 const deactivateCity = async (req: any) => {
     try {
         const { id } = req.parasms;
-        const options = {new: true};
+        const options = {new: true, select: {}};
         const updCity = await model.City.findByIdAndUpdate(id, {ativo: false}, options, (result) => {
             console.log(result);
             return result;
@@ -178,6 +186,7 @@ const deactivateCity = async (req: any) => {
         return updCity;        
     } catch (error) {
         console.log('Error: ', error);
+        return null;
     }
 }
 
@@ -185,9 +194,10 @@ const updateCity = async (req: any) => {
     try {
         const id = req.params.id;
         const { nome, uf, area, populacao, ativo = true } = req.body;
-        const options = {new: true};
+        const options = {new: true, select: {}, omitUndefined: true};
         const updCity = await model.City.findByIdAndUpdate(id, {nome, uf, area, populacao, ativo}, options, (result) => {
             console.log(result);
+            console.log("Update City");
             return result;
         });
         return updCity;        

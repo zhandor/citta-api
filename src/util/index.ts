@@ -19,9 +19,21 @@ const validateFields = (params: ICity) => {
         const nome = 'O nome da cidade está vazio.';
         errors = {nome, ...errors};
         errorCount++;
+    }else if(params.nome.length < 3){
+        const nome = 'O nome da cidade deve ter pelo menos 3 caracteres.';
+        errors = {nome, ...errors};
+        errorCount++;
+    }else if(params.nome.length > 250){
+        const nome = 'O nome da cidade deve ter no máximo 250 caracteres.';
+        errors = {nome, ...errors};
+        errorCount++;
     }
     if(params.uf == '' || typeof params.uf === 'undefined'){
         const uf = 'A UF cidade está vazia.';
+        errors = {uf, ...errors};
+        errorCount++;
+    }else if(params.uf.length !=2 ){
+        const uf = 'A UF deve ter 2 caracteres.';
         errors = {uf, ...errors};
         errorCount++;
     }
@@ -35,8 +47,6 @@ const validateFields = (params: ICity) => {
         errors = {area, ...errors};
         errorCount++;
     }
-    
-    //const errors = {nome, uf, populacao, area};
 
     return {isValid: (errorCount == 0), errors}
 }
