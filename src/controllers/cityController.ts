@@ -1,19 +1,15 @@
-import { Request, Response} from 'express';
+import { NextFunction, Request, Response} from 'express';
 
 import * as model from '../models/cityModel'
 import * as util from '../util'
 
-const create = async (req: Request, res: Response) => {
-    try {
-        if(req.body){
-            const newCity = await createCity(req.body);            
-            res.status((typeof newCity.status === 'undefined')?500:newCity.status).json(newCity.result);
-        }else{
-            res.status(400).json({error: 'A requisição está vazia'})    
-        }
-    } catch (error) {
-        res.status(500).json({error})
+const create = async (req: Request, res: Response, next: NextFunction) => {    
+    const newCity = await createCity(req.body);
+    if(typeof newCity.status === 'undefined'){
+        next({error: 'A requisição está vazia', status: 500});
     }
+    console.log(newCity);
+    res.status(newCity.status).json(newCity.result);    
 }
 
 const list = async (req: Request, res: Response) => {
@@ -74,25 +70,17 @@ const remove = async (req: Request, res: Response) => {
 }
 
 const createCity = async (body: any) => {
-    try {
+    try{
         const { nome, uf, area, populacao } = body;
-        const validateBody = util.validateFields({nome, uf, area, populacao});
-        let result, status;
-        if(validateBody.isValid){
-            const city = new model.City({ nome, uf, area, populacao });
-            result = city.save().then((result) => {
-                console.log("Create City");
-                console.log({result});
-                return result;
-            });
-            status = 201;
-        }else{
-            result = validateBody.errors;
-            status = 400;
-        }
-        return {result, status}
-    } catch (error) {
-        return {result: error, status: 500}
+        let result;
+        const city = new model.City({ nome, uf, area, populacao });
+        result = await city.save().then((result) => {
+            console.log("Create City");
+            return result;
+        });        
+        return {result, status: 201};        
+    }catch (error){
+        return {error, status: 500};
     }
 }
 

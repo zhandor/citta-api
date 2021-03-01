@@ -1,4 +1,7 @@
-import { ICity } from '../models/cityModel'
+import { Request, Response, NextFunction} from 'express';
+
+import { ICity } from '../interfaces/city'
+
 //função para "retirar" diacriticos (acentos e caracteres especiais) nas buscas
 const clearText = (text: string) => {    
     return text
@@ -51,4 +54,4 @@ const validateFields = (params: ICity) => {
     return {isValid: (errorCount == 0), errors}
 }
 
-export{ clearText, validateFields }
+export { clearText, validateFields, }
