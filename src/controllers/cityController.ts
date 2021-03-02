@@ -12,7 +12,7 @@ const create = async (req: Request, res: Response, next: NextFunction) => {
     res.status(newCity.status).json(newCity.result);    
 }
 
-const list = async (req: Request, res: Response) => {
+const list = async (req: Request, res: Response, next: NextFunction) => {
     const {name,uf} = req.query;    
         
     if(name){
@@ -21,7 +21,7 @@ const list = async (req: Request, res: Response) => {
             const cityList = await listCitiesByName(req.query);
             res.status(200).json(cityList);
         } catch (error) {
-            res.status(500).json({error})
+            next({error, status: 500});
         }
     }else if(uf){
         //List by UF
@@ -29,7 +29,7 @@ const list = async (req: Request, res: Response) => {
             const cityList = await listCitiesByUF(req.query);        
             res.status(200).json(cityList);
         } catch (error) {
-            res.status(500).json({error})
+            next({error, status: 500});
         }
     }else{
         //List All
@@ -37,35 +37,35 @@ const list = async (req: Request, res: Response) => {
             const cityList = await listCities();        
             res.status(200).json(cityList);
         } catch (error) {
-            res.status(500).json({error});
+            next({error, status: 500});
         }
     }
 }
 
-const listById = async (req: Request, res: Response) => {
+const listById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const cityList = await listCitiesById(req.params.id);
         res.status(200).json(cityList);
     } catch (error) {
-        res.status(500).json({error})
+        next({error, status: 500});
     }
 }
 
-const update = async (req: Request, res: Response) => {
+const update = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const updCity = await updateCity(req);
         res.status(202).json(updCity);
     } catch (error) {
-        res.status(500).json({error})
+        next({error, status: 500});
     }
 }
 
-const remove = async (req: Request, res: Response) => {
+const remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const delCity = await deleteCity(req.body);
         res.status(202).json(delCity);
     } catch (error) {
-        res.status(500).json({error})
+        next({error, status: 500});
     }
 }
 
